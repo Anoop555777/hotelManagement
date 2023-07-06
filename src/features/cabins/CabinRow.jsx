@@ -1,10 +1,10 @@
-import { useState } from "react";
 import styled from "styled-components";
 import { formatCurrency } from "./../../utils/helpers";
-
+import Modal from "../../ui/Modal";
 import CreateCabinForm from "./CreateCabinForm";
 import { useDeleteCabin } from "./useDeleteCabin";
 import { useCreateCabin } from "./useCreateCabin";
+import ConfirmDelete from "./../../ui/ConfirmDelete";
 
 import { HiTrash, HiSquare2Stack, HiPencil } from "react-icons/hi2";
 const TableRow = styled.div`
@@ -47,7 +47,6 @@ const Discount = styled.div`
 `;
 
 const CabinRow = ({ cabin }) => {
-  const [showEdit, setShowEdit] = useState(false);
   const { isCreating, createCabin } = useCreateCabin();
 
   const {
@@ -83,15 +82,35 @@ const CabinRow = ({ cabin }) => {
           <button onClick={createDuplicateCabin}>
             <HiSquare2Stack />
           </button>
-          <button onClick={() => setShowEdit((edit) => !edit)}>
-            <HiPencil />
-          </button>
-          <button disabled={isDeleting} onClick={() => deleteCabin(cabinId)}>
-            <HiTrash />
-          </button>
+
+          <Modal>
+            <Modal.Open opens="edit">
+              <button>
+                <HiPencil />
+              </button>
+            </Modal.Open>
+            <Modal.Window name="edit">
+              <CreateCabinForm cabinToEdit={cabin} />
+            </Modal.Window>
+
+            {/* <button onClick={() => setShowEdit((edit) => !edit)}>
+            
+          </button> */}
+            <Modal.Open opens="delete">
+              <button disabled={isDeleting}>
+                <HiTrash />
+              </button>
+            </Modal.Open>
+            <Modal.Window name="delete">
+              <ConfirmDelete
+                resource="cabin"
+                disabled={isDeleting}
+                onConfirm={() => deleteCabin(cabinId)}
+              />
+            </Modal.Window>
+          </Modal>
         </div>
       </TableRow>
-      {showEdit && <CreateCabinForm cabinToEdit={cabin} />}
     </>
   );
 };
