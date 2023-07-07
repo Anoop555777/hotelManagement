@@ -1,5 +1,5 @@
 import styled from "styled-components";
-
+import { createContext, useContext } from "react";
 const StyledTable = styled.div`
   border: 1px solid var(--color-grey-200);
 
@@ -9,7 +9,7 @@ const StyledTable = styled.div`
   overflow: hidden;
 `;
 
-const CommonRow = styled.header`
+const CommonRow = styled.div`
   display: grid;
   grid-template-columns: ${(props) => props.columns};
   column-gap: 2.4rem;
@@ -57,3 +57,44 @@ const Empty = styled.p`
   text-align: center;
   margin: 2.4rem;
 `;
+
+const TableContext = createContext();
+
+function Table({ coloums, children }) {
+  return (
+    <TableContext.Provider value={{ coloums }}>
+      <StyledTable role="Table">{children}</StyledTable>
+    </TableContext.Provider>
+  );
+}
+
+function Header({ children }) {
+  const { coloums } = useContext(TableContext);
+
+  return (
+    <StyledHeader role="header" columns={coloums} as="header">
+      {children}
+    </StyledHeader>
+  );
+}
+
+function Row({ children }) {
+  const { coloums } = useContext(TableContext);
+  return (
+    <StyledRow role="row" columns={coloums}>
+      {children}
+    </StyledRow>
+  );
+}
+
+function Body({ data, render }) {
+  if (data.length === 0) return <Empty>No results</Empty>;
+
+  return <StyledBody>{data.map(render)}</StyledBody>;
+}
+
+Table.Header = Header;
+Table.Row = Row;
+Table.Body = Body;
+
+export default Table;

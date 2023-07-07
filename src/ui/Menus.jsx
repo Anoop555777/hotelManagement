@@ -1,4 +1,9 @@
 import styled from "styled-components";
+import { HiEllipsisVertical } from "react-icons/hi2";
+import { useContext, createContext } from "react";
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { useOutsideClick } from "../hooks/useOutsideClick";
 
 const StyledMenu = styled.div`
   display: flex;
@@ -60,3 +65,83 @@ const StyledButton = styled.button`
     transition: all 0.3s;
   }
 `;
+
+const MenuContext = createContext();
+
+function Menus({ children }) {
+  const [openMenu, setOpenMenu] = useState("");
+  const [postion, setPostion] = useState(null);
+
+  const close = () => setOpenMenu("");
+  open = setOpenMenu;
+  return (
+    <MenuContext.Provider
+      value={{ close, openMenu, open, postion, setPostion }}
+    >
+      {children}
+    </MenuContext.Provider>
+  );
+}
+
+function Toggle({ id }) {
+  const { openMenu, open, close, setPostion } = useContext(MenuContext);
+
+  function handleClick(e) {
+    const rect = e.target.closest("button").getBoundingClientRect();
+
+    setPostion({
+      x: window.innerWidth - rect.width - rect.x,
+      y: rect.top + window.pageYOffset + 40,
+    });
+
+    openMenu === "" || openMenu !== id ? open(id) : close();
+  }
+
+  return (
+    <StyledToggle onClick={handleClick}>
+      <HiEllipsisVertical />
+    </StyledToggle>
+  );
+}
+
+function Button({ children, onClick, icons }) {
+  const { close } = useContext(MenuContext);
+  function handleClick() {
+    onClick?.();
+    close();
+  }
+
+  return (
+    <li>
+      <StyledButton onClick={handleClick}>
+        {icons}
+        <span>{children}</span>
+      </StyledButton>
+    </li>
+  );
+}
+
+function List({ id, children }) {
+  const { openMenu, postion, close } = useContext(MenuContext);
+
+  const ref = useOutsideClick(close);
+
+  if (id !== openMenu) return null;
+  return createPortal(
+    <StyledList position={postion} ref={ref}>
+      {children}
+    </StyledList>,
+    document.body
+  );
+}
+
+function Menu({ children }) {
+  return <div>{children}</div>;
+}
+
+Menus.Toggle = Toggle;
+Menus.Button = Button;
+Menus.List = List;
+Menus.Menu = Menu;
+
+export default Menus;
