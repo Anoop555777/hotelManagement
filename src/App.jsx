@@ -9,9 +9,11 @@ import Account from "./pages/Account";
 import Login from "./pages/Login";
 import PageNotFound from "./pages/PageNotFound";
 import AppLayout from "./ui/AppLayout";
+import Booking from "./pages/Booking";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "react-hot-toast";
+import CheckedIn from "./pages/CheckedIn";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,6 +38,8 @@ function App() {
               <Route path="users" element={<Users />} />
               <Route path="settings" element={<Settings />} />
               <Route path="account" element={<Account />} />
+              <Route path="/booking/:bookingId" element={<Booking />} />
+              <Route path="/checkin/:bookingId" element={<CheckedIn />} />
             </Route>
 
             <Route path="login" element={<Login />} />
