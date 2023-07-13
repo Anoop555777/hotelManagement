@@ -33,3 +33,21 @@ export async function logout() {
 
   if (error) throw new Error(error.message);
 }
+
+export async function signUp({ fullName, email, password }) {
+  console.log(fullName, email, password);
+  let { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        fullName,
+        avatar: "",
+      },
+    },
+  });
+
+  if (error) throw new Error(error.message);
+
+  return data;
+}
