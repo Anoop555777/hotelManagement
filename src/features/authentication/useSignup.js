@@ -6,8 +6,7 @@ export function useSignup() {
   const { mutate: signin, isLoading } = useMutation({
     mutationFn: ({ fullName, email, password }) =>
       signupApi({ fullName, email, password }),
-    onSuccess: (user) => {
-      console.log(user);
+    onSuccess: () => {
       toast.success(
         "Account successfully created! Please verify the new account from the user's email address"
       );
