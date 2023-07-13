@@ -7,7 +7,6 @@ export async function logIn({ email, password }) {
   });
 
   if (error) {
-    console.log(error);
     throw new Error("Wrong email and password");
   }
 
@@ -19,7 +18,7 @@ export async function getCurrentUser() {
   if (!session.session) return null;
 
   const { data, error } = await supabase.auth.getUser();
-  console.log(data);
+
   if (error) {
     console.log(error);
     throw new Error(error.message);
@@ -35,7 +34,6 @@ export async function logout() {
 }
 
 export async function signUp({ fullName, email, password }) {
-  console.log(fullName, email, password);
   let { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -50,4 +48,35 @@ export async function signUp({ fullName, email, password }) {
   if (error) throw new Error(error.message);
 
   return data;
+}
+
+export async function updateCurrentUser({ password, fullName, avatar }) {
+  let updateData = {};
+  // 1.update  passwoed or fullname
+  if (password) updateData = { password };
+  if (fullName) updateData = { data: { fullName } };
+
+  const { data, error } = await supabase.auth.updateUser(updateData);
+
+  if (error) throw new Error(error.message);
+  if (!avatar) return data;
+
+  //2. upload the avatar image
+  const fileName = `avatar-${data.user.id}${Date.now()}`;
+
+  const { error: storageError } = await supabase.storage
+    .from("avators")
+    .upload(fileName, avatar);
+
+  if (storageError) throw new Error(storageError.message);
+
+  const { data: updatedUser, error: error2 } = await supabase.auth.updateUser({
+    data: {
+      avatar: `https://sfzhqxiipwnwfsoaateg.supabase.co/storage/v1/object/public/avators/${fileName}`,
+    },
+  });
+
+  if (error2) throw new Error(error2.message);
+
+  return updatedUser;
 }
