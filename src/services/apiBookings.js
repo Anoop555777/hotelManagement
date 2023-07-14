@@ -1,5 +1,6 @@
-import { getToday } from "../utils/helpers";
+import { getToday } from "./../utils/helpers";
 import supabase from "./supabase";
+import { format, parseISO } from "date-fns";
 
 export async function getBookings({ filter, sortBy, page }) {
   let query = supabase
@@ -47,7 +48,7 @@ export async function getBooking(id) {
 export async function getBookingsAfterDate(date) {
   const { data, error } = await supabase
     .from("bookings")
-    .select("created_at, totalPrice, extrasPrice")
+    .select("created_at, totalPrice, extraPrice")
     .gte("created_at", date)
     .lte("created_at", getToday({ end: true }));
 
@@ -81,20 +82,27 @@ export async function getStaysTodayActivity() {
   const { data, error } = await supabase
     .from("bookings")
     .select("*, guests(fullName, nationality, countryFlag)")
-    .or(
-      `and(status.eq.unconfirmed,startDate.eq.${getToday()}),and(status.eq.checked-in,endDate.eq.${getToday()})`
-    )
+
     .order("created_at");
 
   // Equivalent to this. But by querying this, we only download the data we actually need, otherwise we would need ALL bookings ever created
   // (stay.status === 'unconfirmed' && isToday(new Date(stay.startDate))) ||
   // (stay.status === 'checked-in' && isToday(new Date(stay.endDate)))
-
+  const todayData = data.filter(
+    (date) =>
+      (format(parseISO(date.startDate), "MMM dd") ===
+        format(new Date(), "MMM dd") &&
+        date.status === "unconfirmed") ||
+      (format(parseISO(date.endDate), "MMM dd") ===
+        format(new Date(), "MMM dd") &&
+        date.status === "checked-in")
+  );
   if (error) {
     console.error(error);
     throw new Error("Bookings could not get loaded");
   }
-  return data;
+
+  return todayData;
 }
 
 export async function updateBooking(id, obj) {
