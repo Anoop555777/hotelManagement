@@ -40,6 +40,7 @@ function BookingDetail() {
   if (isLoading) return <Spinner />;
 
   const { status, id: bookingId, isPaid } = booking;
+  if (!booking) return <Empty resource="Booking" />;
 
   return (
     <>
